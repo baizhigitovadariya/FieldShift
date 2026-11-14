@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FieldShift: what could grow well here?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700;800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --field:#EDF2EC; --paper:#FBFCFA; --ink:#15231B; --soft:#4C5D53; --line:#C9D4CB;
+  --spruce:#1F4D3A; --grain:#D99A1E; --dry:#B4532A; --wet:#2C6E9B;
+  --r1:#E3EBCF; --r2:#BFD49B; --r3:#8DB56E; --r4:#4F8A52; --r5:#1F4D3A;
+  --display:"Bitter", Rockwell, "Roboto Slab", Georgia, serif;
+  --body:"Public Sans", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html{font-size:18px}
+body{margin:0;background:var(--field);color:var(--ink);font-family:var(--body);line-height:1.5}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--grain);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+
+header.top{background:var(--spruce);color:#fff;padding:26px 0 30px}
+header.top h1{font-size:clamp(1.9rem,4.2vw,3rem);font-weight:800;letter-spacing:-.01em;max-width:18ch}
+header.top p{margin:.6rem 0 0;max-width:62ch;color:#DCE8DF;font-size:1.02rem}
+.brand{font-family:var(--display);font-weight:700;color:var(--grain);font-size:1rem;margin-bottom:.5rem}
+
+main.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;padding-top:26px;padding-bottom:40px;align-items:start}
+@media (max-width:980px){main.grid{grid-template-columns:minmax(0,1fr)}}
+
+.step{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:18px 20px 20px;margin-bottom:18px}
+.step h2{font-size:1.2rem;font-weight:700;display:flex;gap:.6rem;align-items:baseline}
+.step h2 .n{flex:none;font-size:1rem;width:1.7rem;height:1.7rem;border-radius:50%;background:var(--spruce);color:#fff;display:inline-grid;place-items:center;transform:translateY(-1px)}
+.hint{color:var(--soft);font-size:.9rem;margin:.35rem 0 .8rem}
+
+.mapbox{position:sticky;top:12px}
+@media (max-width:980px){.mapbox{position:static}}
+#map{width:100%;height:auto;display:block}
+#map path{stroke:#fff;stroke-width:.9;cursor:pointer;transition:fill .2s}
+#map path:hover{stroke:var(--ink);stroke-width:1.6}
+#map path.sel{stroke:var(--grain);stroke-width:3.2}
+#map path.none{fill:url(#hatch)}
+.maprow{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:10px}
+.maprow label{font-size:.9rem;font-weight:600}
+select{background:#fff;border:1.5px solid var(--soft);border-radius:4px;padding:.4rem .5rem;min-height:44px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem;color:var(--soft);margin-top:8px;align-items:center}
+.legend span.sw{display:inline-block;width:18px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.15)}
+#maptip{font-size:.92rem;min-height:1.5em;margin-top:6px;font-weight:600}
+
+.season{display:grid;grid-template-columns:repeat(3,1fr);border:2px solid var(--ink);border-radius:6px;overflow:hidden}
+.season button{background:#fff;border:0;border-right:2px solid var(--ink);padding:.75rem .4rem;cursor:pointer;font-family:var(--display);font-weight:700;font-size:1.05rem;min-height:56px}
+.season button:last-child{border-right:0}
+.season button small{display:block;font-family:var(--body);font-weight:500;font-size:.76rem;color:var(--soft)}
+.season button[aria-pressed="true"]{color:#fff}
+.season button[aria-pressed="true"] small{color:#fff;opacity:.9}
+.season button[data-s="dry"][aria-pressed="true"]{background:var(--dry)}
+.season button[data-s="typical"][aria-pressed="true"]{background:var(--spruce)}
+.season button[data-s="wet"][aria-pressed="true"]{background:var(--wet)}
+#seasonnote{font-size:.9rem;color:var(--soft);margin:.7rem 0 0}
+
+fieldset{border:0;padding:0;margin:0 0 14px}
+legend{font-weight:700;padding:0;margin-bottom:6px;font-size:.98rem}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{display:flex;align-items:center;gap:.45rem;background:#fff;border:1.5px solid var(--line);border-radius:4px;padding:.45rem .7rem;font-size:.92rem;cursor:pointer;min-height:44px}
+.checks input{width:1.15rem;height:1.15rem;accent-color:var(--spruce)}
+.checks label:has(input:checked){border-color:var(--spruce);background:#F1F7F2}
+details.prices{margin-top:4px}
+details.prices summary{cursor:pointer;font-weight:700;padding:.3rem 0}
+.pricegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px 16px;margin-top:8px}
+.pricegrid label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.9rem}
+.pricegrid input{width:6.2rem;padding:.3rem .4rem;border:1.5px solid var(--soft);border-radius:4px;text-align:right;min-height:40px}
+
+#results h2{font-size:1.45rem;font-weight:800}
+#resultsub{color:var(--soft);font-size:.93rem;margin:.3rem 0 1rem}
+.crop{background:var(--paper);border:1px solid var(--line);border-left:8px solid var(--spruce);border-radius:4px;padding:14px 16px 14px;margin-bottom:12px}
+.crop.flag{border-left-color:var(--dry)}
+.crop .head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.crop h3{font-size:1.2rem;font-weight:700}
+.crop .money{font-family:var(--display);font-weight:800;font-size:1.35rem;white-space:nowrap}
+.crop .money small{font-family:var(--body);font-weight:500;font-size:.78rem;color:var(--soft)}
+.crop p{margin:.35rem 0 0;font-size:.94rem}
+.crop p.why{color:var(--soft)}
+.range{margin:.7rem 0 .2rem}
+.spark{margin-top:.5rem}
+.spark svg{width:100%;height:54px;display:block}
+.spark .cap{font-size:.78rem;color:var(--soft)}
+.tag{display:inline-block;font-size:.78rem;font-weight:700;border-radius:3px;padding:.1rem .45rem;margin-left:.4rem;vertical-align:2px}
+.tag.warn{background:#F6E3D9;color:#7E3415}
+.tag.est{background:#E6ECF2;color:#2A4A63}
+.out{background:transparent;border:1px dashed var(--soft);border-radius:4px;padding:10px 14px;margin-bottom:8px;color:var(--soft);font-size:.93rem}
+.out b{color:var(--ink)}
+.empty{background:var(--paper);border:2px dashed var(--soft);border-radius:6px;padding:26px 20px;font-size:1.05rem}
+
+section.trust{background:var(--paper);border-top:4px solid var(--grain);padding:30px 0 36px}
+section.trust h2{font-size:1.5rem;font-weight:800;margin-bottom:.6rem}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:36px}
+@media (max-width:980px){.cols{grid-template-columns:1fr}}
+.cols ul{padding-left:1.1rem;margin:.4rem 0}
+.cols li{margin-bottom:.5rem;max-width:68ch}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:right;padding:.42rem .5rem;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:700;vertical-align:bottom;line-height:1.25}
+.tablewrap{overflow-x:auto}
+td.better{font-weight:700;color:var(--spruce)}
+footer{padding:20px 0 34px;font-size:.84rem;color:var(--soft)}
+footer p{max-width:90ch;margin:.3rem 0}
+@media (prefers-reduced-motion:reduce){#map path{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">FieldShift, North Dakota</div>
+    <h1>What could grow well on your land?</h1>
+    <p>Pick your county and the kind of season you want to plan for. Tell us about your equipment, water and markets. You get a short list of crops, with the numbers behind each one. It is a starting point for a conversation with people who know your fields.</p>
+  </div>
+</header>
+
+<main class="wrap grid">
+  <div class="mapbox">
+    <div class="step">
+      <h2><span class="n">1</span>Pick your county</h2>
+      <p class="hint">Tap the map or use the list.</p>
+      <div class="maprow">
+        <label for="countysel">County</label>
+        <select id="countysel"><option value="">Choose a county</option></select>
+        <label for="layersel">Color the map by</label>
+        <select id="layersel"></select>
+      </div>
+      <svg id="map" role="group" aria-label="Map of North Dakota counties">
+        <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E4E8E4"/><line x1="0" y1="0" x2="0" y2="6" stroke="#B9C2BB" stroke-width="2"/></pattern></defs>
+        <g id="mapg"></g>
+      </svg>
+      <div id="maptip" aria-live="polite"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="step">
+      <h2><span class="n">2</span>What kind of season?</h2>
+      <p class="hint">Nobody knows the season ahead. Try each one and see what changes.</p>
+      <div class="season" role="group" aria-label="Season">
+        <button type="button" data-s="dry" aria-pressed="false">Dry<small>like the 4 driest of 16</small></button>
+        <button type="button" data-s="typical" aria-pressed="true">Typical<small>a middle year</small></button>
+        <button type="button" data-s="wet" aria-pressed="false">Wet<small>like the 4 wettest of 16</small></button>
+      </div>
+      <p id="seasonnote"></p>
+    </div>
+
+    <div class="step">
+      <h2><span class="n">3</span>Your farm</h2>
+      <p class="hint">Crops that do not fit are moved to the bottom with the reason.</p>
+      <fieldset>
+        <legend>Seeding and harvest equipment you can use</legend>
+        <div class="checks">
+          <label><input type="checkbox" id="eq_drill" checked>Grain drill or air seeder</label>
+          <label><input type="checkbox" id="eq_planter" checked>Row crop planter</label>
+          <label><input type="checkbox" id="eq_cornhead" checked>Corn head for the combine</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Is water often short on your fields?</legend>
+        <div class="checks">
+          <label><input type="radio" name="water" value="ok" checked>Usually enough</label>
+          <label><input type="radio" name="water" value="short">Often short</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Crops you can sell nearby</legend>
+        <div class="checks" id="markets"></div>
+      </fieldset>
+      <details class="prices">
+        <summary>Prices (type your local price)</summary>
+        <p class="hint" id="pricehint"></p>
+        <div class="pricegrid" id="prices"></div>
+      </details>
+    </div>
+
+    <div id="results" aria-live="polite">
+      <div class="empty">Pick a county on the map to see your crop list.</div>
+    </div>
+  </div>
+</main>
+
+<section class="trust">
+  <div class="wrap cols">
+    <div>
+      <h2>Where your judgment matters most</h2>
+      <ul>
+        <li><b>These are county averages.</b> One field can be well above or below, depending on soil, slope, drainage, rotation and seeding date. You know your fields. This tool does not.</li>
+        <li><b>Sales per acre is not profit.</b> Corn and sunflower cost more to grow than wheat or peas. Seed, fertilizer, drying, hauling and insurance are not counted here.</li>
+        <li><b>A dry season here is an average of four dry years.</b> A drought that is also very hot, like 2021, can hit much harder. Check the worst reported year on each crop.</li>
+        <li><b>Rotation, disease and herbicide history</b> can rule a crop out no matter what the numbers say.</li>
+        <li><b>Talk it through</b> with your agronomist, your county Extension agent and your elevator before changing a plan.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>How far to trust the numbers</h2>
+      <p style="margin:.2rem 0 .7rem;max-width:66ch">The typical number is the county's middle reported yield for 2020 to 2025. The dry and wet change comes from a weather model. The model was tested on years it never saw. Here is how far off it was, next to simply using each county's own average.</p>
+      <div class="tablewrap"><table id="trusttable"></table></div>
+      <p class="hint" style="margin-top:.7rem">Lower is better. Bold marks the smaller miss. The model helps most for canola, durum and sunflower, and does not help for soybeans. Wet season numbers are the least certain.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <p id="sources"></p>
+  <p>Built for the NASA Space Apps Challenge 2026, "Adapting Farms with NASA Data". A student prototype. It supports local knowledge and does not replace it.</p>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+const D = window.FIELDSHIFT;
+if(!D){document.getElementById('results').innerHTML='<div class="empty">The data file did not load. Make sure data.js sits next to this page.</div>';return;}
+const CROPS = D.crops, COUNTIES = D.counties, KEYS = Object.keys(CROPS);
+const state = {county:null, season:'typical', layer:'spring_wheat', water:'ok', prices:{}, sell:{}};
+KEYS.forEach(k=>{state.prices[k]=CROPS[k].price; state.sell[k]=true;});
+const $ = id=>document.getElementById(id);
+const SEASON_WORD = {dry:'a dry season', typical:'a typical season', wet:'a wet season'};
+const SEASON_COLOR = {dry:'#B4532A', typical:'#1F4D3A', wet:'#2C6E9B'};
+
+const fmtYield = (k,v)=> CROPS[k].unit==='bu/acre' ? (v>=100?Math.round(v):Math.round(v*10)/10).toLocaleString('en-US') : (Math.round(v/10)*10).toLocaleString('en-US');
+const unitShort = k=>CROPS[k].unit.replace('/acre',' per acre');
+const money = v=>'$'+Math.round(v).toLocaleString('en-US');
+const pct = v=>(v>0?'+':'')+Math.round(v)+'%';
+
+/* ---------- map ---------- */
+const feats = D.geo.features;
+let minLon=1e9,maxLon=-1e9,minLat=1e9,maxLat=-1e9;
+const eachPt=(g,fn)=>{const polys=g.type==='Polygon'?[g.coordinates]:g.coordinates;polys.forEach(p=>p.forEach(r=>r.forEach(fn)));};
+feats.forEach(f=>eachPt(f.geometry,([x,y])=>{minLon=Math.min(minLon,x);maxLon=Math.max(maxLon,x);minLat=Math.min(minLat,y);maxLat=Math.max(maxLat,y);}));
+const K=Math.cos((minLat+maxLat)/2*Math.PI/180), S=100;
+const px=([x,y])=>[((x-minLon)*K*S).toFixed(1),((maxLat-y)*S).toFixed(1)];
+const W=(maxLon-minLon)*K*S, H=(maxLat-minLat)*S;
+$('map').setAttribute('viewBox',`-4 -4 ${(W+8).toFixed(0)} ${(H+8).toFixed(0)}`);
+const NS='http://www.w3.org/2000/svg';
+const paths={};
+feats.slice().sort((a,b)=>a.properties.name.localeCompare(b.properties.name)).forEach(f=>{
+  const g=f.geometry, polys=g.type==='Polygon'?[g.coordinates]:g.coordinates;
+  const d=polys.map(p=>p.map(r=>'M'+r.map(pt=>px(pt).join(',')).join('L')+'Z').join('')).join('');
+  const el=document.createElementNS(NS,'path');
+  el.setAttribute('d',d); el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+  const fips=f.properties.fips, name=(COUNTIES[fips]||{}).name||f.properties.name;
+  el.dataset.fips=fips; el.setAttribute('aria-label',name+' County');
+  el.addEventListener('click',()=>pick(fips));
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(fips);}});
+  el.addEventListener('mouseenter',()=>tip(fips)); el.addEventListener('focus',()=>tip(fips));
+  el.addEventListener('mouseleave',()=>tip(state.county));
+  $('mapg').appendChild(el); paths[fips]=el;
+  const o=document.createElement('option'); o.value=fips; o.textContent=name; $('countysel').appendChild(o);
+});
+KEYS.forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=CROPS[k].label+' yield';$('layersel').appendChild(o);});
+$('layersel').value=state.layer;
+
+const RAMP=['#E3EBCF','#BFD49B','#8DB56E','#4F8A52','#1F4D3A'];
+function layerValue(fips){const c=COUNTIES[fips]&&COUNTIES[fips].crops[state.layer];return c?c[state.season]:null;}
+function paintMap(){
+  const vals=Object.keys(paths).map(layerValue).filter(v=>v!=null).sort((a,b)=>a-b);
+  const q=i=>vals[Math.min(vals.length-1,Math.floor(vals.length*i/5))];
+  const cuts=[q(1),q(2),q(3),q(4)];
+  Object.entries(paths).forEach(([fips,el])=>{
+    const v=layerValue(fips);
+    el.classList.toggle('none',v==null);
+    if(v==null){el.style.fill='';return;}
+    let b=0; while(b<4&&v>=cuts[b])b++;
+    el.style.fill=RAMP[b];
+    el.classList.toggle('sel',fips===state.county);
+  });
+  Object.entries(paths).forEach(([fips,el])=>el.classList.toggle('sel',fips===state.county));
+  if(state.county) $('mapg').appendChild(paths[state.county]);
+  const k=state.layer, lo=vals[0], hi=vals[vals.length-1];
+  const edges=[lo,...cuts,hi];
+  $('legend').innerHTML=`<span><b>${CROPS[k].label}, ${SEASON_WORD[state.season]}</b> (${CROPS[k].unit}):</span>`+
+    RAMP.map((c,i)=>`<span><span class="sw" style="background:${c}"></span>${fmtYield(k,edges[i])} to ${fmtYield(k,edges[i+1])}</span>`).join('')+
+    `<span><span class="sw" style="background:repeating-linear-gradient(45deg,#E4E8E4 0 3px,#B9C2BB 3px 5px)"></span>too few reports</span>`;
+  tip(state.county);
+}
+function tip(fips){
+  if(!fips||!COUNTIES[fips]){$('maptip').textContent='';return;}
+  const v=layerValue(fips), k=state.layer;
+  $('maptip').textContent=COUNTIES[fips].name+' County: '+(v==null?'too few '+CROPS[k].label.toLowerCase()+' reports to show a number':CROPS[k].label+' about '+fmtYield(k,v)+' '+unitShort(k)+' in '+SEASON_WORD[state.season]);
+}
+function pick(fips){state.county=fips;$('countysel').value=fips;paintMap();render();
+  if(window.matchMedia('(max-width:980px)').matches) $('results').scrollIntoView({behavior:'smooth',block:'start'});}
+$('countysel').addEventListener('change',e=>{if(e.target.value)pick(e.target.value);});
+$('layersel').addEventListener('change',e=>{state.layer=e.target.value;paintMap();});
+
+/* ---------- controls ---------- */
+document.querySelectorAll('.season button').forEach(b=>b.addEventListener('click',()=>{
+  state.season=b.dataset.s;
+  document.querySelectorAll('.season button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  paintMap();render();
+}));
+['eq_drill','eq_planter','eq_cornhead'].forEach(id=>$(id).addEventListener('change',render));
+document.querySelectorAll('input[name=water]').forEach(r=>r.addEventListener('change',e=>{state.water=e.target.value;render();}));
+KEYS.forEach(k=>{
+  const l=document.createElement('label');
+  l.innerHTML=`<input type="checkbox" checked data-k="${k}">${CROPS[k].label}`;
+  l.querySelector('input').addEventListener('change',e=>{state.sell[k]=e.target.checked;render();});
+  $('markets').appendChild(l);
+  const p=document.createElement('label');
+  p.innerHTML=`<span>${CROPS[k].label} ($ per ${CROPS[k].price_per})</span><input type="number" min="0" step="0.01" value="${CROPS[k].price}" data-k="${k}" aria-label="${CROPS[k].label} price in dollars per ${CROPS[k].price_per}">`;
+  p.querySelector('input').addEventListener('input',e=>{const v=parseFloat(e.target.value);state.prices[k]=isFinite(v)&&v>=0?v:0;render();});
+  $('prices').appendChild(p);
+});
+$('pricehint').textContent='Filled in with the North Dakota average price farmers received in '+CROPS[KEYS[0]].price_year+' (USDA). Canola, peas and sunflower are shown per pound.';
+
+function equipmentReason(k){
+  const d=$('eq_drill').checked,p=$('eq_planter').checked,c=$('eq_cornhead').checked,n=CROPS[k].needs;
+  if(n.includes('drill')&&!d) return 'Usually seeded with a grain drill or air seeder.';
+  if(n.includes('drill_or_planter')&&!d&&!p) return 'Needs a grain drill, air seeder or row crop planter.';
+  if(n.includes('planter')&&!p) return 'Usually needs a row crop planter.';
+  if(n.includes('corn_head')&&!c) return 'Needs a corn head for the combine.';
+  return null;
+}
+
+/* ---------- results ---------- */
+function rangeSVG(k,c,worst){
+  const vals=[c.dry,c.typical,c.wet]; if(worst) vals.push(worst[1]);
+  const lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*0.18||1, a=lo-pad, b=hi+pad;
+  const X=v=>(6+ (v-a)/(b-a)*88).toFixed(1);
+  const pts=[['dry',c.dry,'Dry'],['typical',c.typical,'Typical'],['wet',c.wet,'Wet']];
+  let h='<div style="position:relative;height:62px">'+
+    '<div style="position:absolute;left:2%;right:2%;top:29px;height:6px;border-radius:3px;background:#D5DDD6"></div>';
+  if(worst) h+=`<div title="Worst reported year" style="position:absolute;left:${X(worst[1])}%;top:22px;width:2px;height:20px;background:#15231B"></div>`+
+    `<div style="position:absolute;left:${X(worst[1])}%;top:44px;transform:translateX(${+X(worst[1])<14?'0':'-50%'});font-size:.72rem;color:#4C5D53;white-space:nowrap">worst reported: ${fmtYield(k,worst[1])} in ${worst[0]}</div>`;
+  pts.forEach(([key,v,lab])=>{
+    const on=key===state.season, sz=on?20:12;
+    h+=`<div style="position:absolute;left:${X(v)}%;top:${32-sz/2}px;width:${sz}px;height:${sz}px;margin-left:${-sz/2}px;border-radius:50%;background:${SEASON_COLOR[key]};border:2px solid #fff;box-shadow:0 0 0 1px ${SEASON_COLOR[key]};z-index:${on?2:1}"></div>`;
+    if(on) h+=`<div style="position:absolute;left:${X(v)}%;top:0;transform:translateX(-50%);font-size:.8rem;font-weight:700;color:${SEASON_COLOR[key]};white-space:nowrap">${lab}: ${fmtYield(k,v)}</div>`;
+  });
+  return h+'</div>';
+}
+function sparkSVG(k,c,county){
+  const y0=D.meta.years[0], y1=D.meta.years[1], n=y1-y0+1, hist=Object.fromEntries(c.history);
+  const max=Math.max(...c.history.map(h=>h[1]),c.typical);
+  let s=`<svg viewBox="0 0 ${n*10} 54" preserveAspectRatio="none" role="img" aria-label="Reported ${CROPS[k].label} yields by year">`;
+  for(let y=y0;y<=y1;y++){
+    const x=(y-y0)*10+1.5, v=hist[y], dryYr=county.dry_years.includes(y);
+    if(v==null){s+=`<rect x="${x}" y="50" width="7" height="2" fill="#C9D4CB"/>`;continue;}
+    const h=Math.max(2,v/max*48);
+    s+=`<rect x="${x}" y="${52-h}" width="7" height="${h}" fill="${dryYr?'#B4532A':'#8DB56E'}"><title>${y}: ${fmtYield(k,v)} ${CROPS[k].unit}</title></rect>`;
+  }
+  return s+'</svg>';
+}
+function render(){
+  const fips=state.county; if(!fips) return;
+  const county=COUNTIES[fips], rankSeason=state.water==='short'?'dry':state.season;
+  $('seasonnote').textContent=county.name+' County, driest seasons since '+D.meta.years[0]+': '+county.dry_years.join(', ')+'. Wettest: '+county.wet_years.join(', ')+'.';
+  const fit=[], out=[];
+  KEYS.forEach(k=>{
+    const c=county.crops[k];
+    if(!c){out.push([k,'USDA has too few county reports here. That usually means few farms grow it in this county.']);return;}
+    const eq=equipmentReason(k);
+    if(eq){out.push([k,eq]);return;}
+    if(!state.sell[k]){out.push([k,'You said you cannot sell this nearby.']);return;}
+    const price=state.prices[k];
+    fit.push({k,c,sales:c[state.season]*price,rank:c[rankSeason]*price,drop:(c.dry/c.typical-1)*100});
+  });
+  fit.sort((a,b)=>b.rank-a.rank);
+  let h=`<h2>${county.name} County, ${SEASON_WORD[state.season]}</h2><p id="resultsub">`+
+    (state.water==='short'?'Because water is often short, crops are ranked by sales per acre in a <b>dry</b> season. ':'Ranked by estimated sales per acre before costs. ')+
+    'Each dot row shows dry, typical and wet side by side.</p>';
+  if(!fit.length) h+='<div class="empty">No crops fit these choices. Turn a piece of equipment or a market back on in step 3.</div>';
+  fit.forEach((r,i)=>{
+    const {k,c}=r, m=CROPS[k], v=c[state.season], give=v*m.test_error_pct/100;
+    const worst=c.history.length?c.history.reduce((a,b)=>b[1]<a[1]?b:a):null;
+    const flag=state.water==='short'&&r.drop<=-10;
+    const dropTxt=Math.abs(r.drop)<1.5?'holds about level in a dry season':(r.drop<0?'drops about '+Math.abs(Math.round(r.drop))+'% in a dry season':'runs about '+Math.round(r.drop)+'% higher in a dry season');
+    const giveTxt=m.unit==='bu/acre'?Math.round(give).toLocaleString('en-US'):fmtYield(k,give);
+    h+=`<article class="crop${flag?' flag':''}">
+      <div class="head"><h3>${i+1}. ${m.label}${flag?'<span class="tag warn">big drop when dry</span>':''}${c.level_source==='estimate'?'<span class="tag est">rough estimate</span>':''}</h3>
+      <div class="money">${money(r.sales)} <small>sales per acre, before costs</small></div></div>
+      <p>About <b>${fmtYield(k,v)} ${unitShort(k)}</b> in ${SEASON_WORD[state.season]}, give or take ${giveTxt}. At $${state.prices[k].toFixed(m.price_per==='lb'?3:2)} per ${m.price_per}.</p>
+      <div class="range">${rangeSVG(k,c,worst)}</div>
+      <p class="why">In this county the ${m.label.toLowerCase()} yield ${dropTxt}.${c.level_source==='estimate'?' Fewer than 3 county reports since 2020, so the typical number is estimated from nearby patterns.':''}</p>
+      <div class="spark">${sparkSVG(k,c,county)}<div class="cap">Reported county yields, ${D.meta.years[0]} to ${D.meta.years[1]} (USDA). Rust bars are this county's 4 driest seasons. Gaps are years with no county report.</div></div>
+    </article>`;
+  });
+  if(out.length){h+='<h3 style="font-size:1.05rem;margin:1.2rem 0 .5rem">Left out</h3>';
+    out.forEach(([k,why])=>h+=`<div class="out"><b>${CROPS[k].label}.</b> ${why}</div>`);}
+  $('results').innerHTML=h;
+}
+
+/* ---------- trust table ---------- */
+(function(){
+  let h='<thead><tr><th>Crop</th><th>Model miss, tested 2016 to 2024</th><th>County average miss</th><th>Model miss, 2025</th><th>County average miss, 2025</th></tr></thead><tbody>';
+  KEYS.forEach(k=>{const m=CROPS[k];
+    const a=m.test_error_pct,b=m.county_avg_error_pct,c=m.error_2025,d=m.county_avg_error_2025,u=m.unit.split('/')[0];
+    const f=x=>x==null?'no data':fmtYield(k,x)+' '+u;
+    h+=`<tr><td>${m.label}</td><td class="${a<b?'better':''}">${a}%</td><td class="${b<a?'better':''}">${b}%</td><td class="${c<d?'better':''}">${f(c)}</td><td class="${d<c?'better':''}">${f(d)}</td></tr>`;});
+  $('trusttable').innerHTML=h+'</tbody>';
+  $('sources').textContent='Data: '+D.meta.sources.join('; ')+'. Seasons '+D.meta.years[0]+' to '+D.meta.years[1]+'. Data file built '+D.meta.generated+'.';
+})();
+
+paintMap();
+})();
+</script>
+</body>
+</html>
