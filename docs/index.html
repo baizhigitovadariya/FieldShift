@@ -146,9 +146,9 @@ footer p{max-width:90ch;margin:.3rem 0}
       <h2><span class="n">2</span>What kind of season?</h2>
       <p class="hint">Nobody knows the season ahead. Try each one and see what changes.</p>
       <div class="season" role="group" aria-label="Season">
-        <button type="button" data-s="dry" aria-pressed="false">Dry<small>like the 4 driest of 16</small></button>
+        <button type="button" data-s="dry" aria-pressed="false">Dry<small id="drysmall"></small></button>
         <button type="button" data-s="typical" aria-pressed="true">Typical<small>a middle year</small></button>
-        <button type="button" data-s="wet" aria-pressed="false">Wet<small>like the 4 wettest of 16</small></button>
+        <button type="button" data-s="wet" aria-pressed="false">Wet<small id="wetsmall"></small></button>
       </div>
       <p id="seasonnote"></p>
     </div>
@@ -195,16 +195,16 @@ footer p{max-width:90ch;margin:.3rem 0}
       <ul>
         <li><b>These are county averages.</b> One field can be well above or below, depending on soil, slope, drainage, rotation and seeding date. You know your fields. This tool does not.</li>
         <li><b>Sales per acre is not profit.</b> Corn and sunflower cost more to grow than wheat or peas. Seed, fertilizer, drying, hauling and insurance are not counted here.</li>
-        <li><b>A dry season here is an average of four dry years.</b> A drought that is also very hot, like 2021, can hit much harder. Check the worst reported year on each crop.</li>
+        <li><b>A dry season here is an average of several dry years.</b> A drought that is also very hot, like 2021, can hit much harder. Check the worst reported year on each crop.</li>
         <li><b>Rotation, disease and herbicide history</b> can rule a crop out no matter what the numbers say.</li>
         <li><b>Talk it through</b> with your agronomist, your county Extension agent and your elevator before changing a plan.</li>
       </ul>
     </div>
     <div>
       <h2>How far to trust the numbers</h2>
-      <p style="margin:.2rem 0 .7rem;max-width:66ch">The typical number is the county's middle reported yield for 2020 to 2025. The dry and wet change comes from a weather model. The model was tested on years it never saw. Here is how far off it was, next to simply using each county's own average.</p>
+      <p style="margin:.2rem 0 .7rem;max-width:66ch">The typical number is the county's middle reported yield for 2020 to 2025. The dry and wet change comes from a model that uses NASA weather, soil wetness and satellite rain. The model was tested on years it never saw. Here is how far off it was, as a share of yield, next to simply using each county's own average.</p>
       <div class="tablewrap"><table id="trusttable"></table></div>
-      <p class="hint" style="margin-top:.7rem">Lower is better. Bold marks the smaller miss. The model helps most for canola, durum and sunflower, and does not help for soybeans. Wet season numbers are the least certain.</p>
+      <p class="hint" style="margin-top:.7rem" id="trustnote"></p>
     </div>
   </div>
 </section>
@@ -381,7 +381,7 @@ function render(){
       <p>About <b>${fmtYield(k,v)} ${unitShort(k)}</b> in ${SEASON_WORD[state.season]}, give or take ${giveTxt}. At $${state.prices[k].toFixed(m.price_per==='lb'?3:2)} per ${m.price_per}.</p>
       <div class="range">${rangeSVG(k,c,worst)}</div>
       <p class="why">In this county the ${m.label.toLowerCase()} yield ${dropTxt}.${c.level_source==='estimate'?' Fewer than 3 county reports since 2020, so the typical number is estimated from nearby patterns.':''}</p>
-      <div class="spark">${sparkSVG(k,c,county)}<div class="cap">Reported county yields, ${D.meta.years[0]} to ${D.meta.years[1]} (USDA). Rust bars are this county's 4 driest seasons. Gaps are years with no county report.</div></div>
+      <div class="spark">${sparkSVG(k,c,county)}<div class="cap">Reported county yields, ${D.meta.years[0]} to ${D.meta.years[1]} (USDA). Rust bars are this county's ${D.meta.season_n} driest seasons. Gaps are years with no county report.</div></div>
     </article>`;
   });
   if(out.length){h+='<h3 style="font-size:1.05rem;margin:1.2rem 0 .5rem">Left out</h3>';
@@ -392,11 +392,15 @@ function render(){
 /* ---------- trust table ---------- */
 (function(){
   let h='<thead><tr><th>Crop</th><th>Model miss, tested 2016 to 2024</th><th>County average miss</th><th>Model miss, 2025</th><th>County average miss, 2025</th></tr></thead><tbody>';
+  let w1=0,w2=0;const lose=[];
   KEYS.forEach(k=>{const m=CROPS[k];
-    const a=m.test_error_pct,b=m.county_avg_error_pct,c=m.error_2025,d=m.county_avg_error_2025,u=m.unit.split('/')[0];
-    const f=x=>x==null?'no data':fmtYield(k,x)+' '+u;
-    h+=`<tr><td>${m.label}</td><td class="${a<b?'better':''}">${a}%</td><td class="${b<a?'better':''}">${b}%</td><td class="${c<d?'better':''}">${f(c)}</td><td class="${d<c?'better':''}">${f(d)}</td></tr>`;});
+    const a=m.test_error_pct,b=m.county_avg_error_pct,c=m.error_2025_pct,d=m.county_avg_error_2025_pct;
+    if(a<b)w1++; if(c<d)w2++; else lose.push(m.label.toLowerCase());
+    h+=`<tr><td>${m.label}</td><td class="${a<b?'better':''}">${a}%</td><td class="${b<a?'better':''}">${b}%</td><td class="${c<d?'better':''}">${c}%</td><td class="${d<c?'better':''}">${d}%</td></tr>`;});
   $('trusttable').innerHTML=h+'</tbody>';
+  $('trustnote').textContent='Lower is better. Bold marks the smaller miss. In the 2016 to 2024 tests the model beat the county average for '+w1+' of '+KEYS.length+' crops. In 2025, a year held back until the end, it did for '+w2+' of '+KEYS.length+(lose.length?' (not for '+lose.join(' or ')+')':'')+'. Wet season numbers are the least certain.';
+  const N=D.meta.season_n, T=D.meta.years[1]-D.meta.years[0]+1;
+  $('drysmall').textContent='like the '+N+' driest of '+T; $('wetsmall').textContent='like the '+N+' wettest of '+T;
   $('sources').textContent='Data: '+D.meta.sources.join('; ')+'. Seasons '+D.meta.years[0]+' to '+D.meta.years[1]+'. Data file built '+D.meta.generated+'.';
 })();
 
