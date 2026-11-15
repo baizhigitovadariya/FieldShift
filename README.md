@@ -32,16 +32,22 @@ Colab: upload the notebook, paste this repo's URL into `REPO_URL` in the first c
 
 ## What the model can and cannot do
 
-The model is a random forest per crop. It uses month by month weather, soil wetness in April and May, winter rain and satellite rain, and it predicts yield relative to the statewide trend line. It trains on 2001 onward.
+We train one random forest per crop on county data from 2001 onward. Each model sees month by month weather, how wet the soil was in April and May, winter rain, and satellite rain. It predicts yield relative to the statewide trend, since yields keep climbing over time.
 
-* It is tested only on years it never saw: train on earlier years, predict a later one (2016 to 2024), then 2025 once at the end.
-* In the 2016 to 2024 tests its error averages 14.6% of yield over the 8 crops. Using each county's own average gives 18.1%. The first version of the model gave 16.9%. It beats the county average for all 8 crops.
-* On 2025 it is far better than the first version for spring wheat, barley, corn and canola, and worse for soybeans, dry peas and durum. Averaged over the crops the two tie (11.9% and 11.8%).
-* In drought years the error is still about 20%.
-* It needs the whole season's weather, so it is not a forecast. In the app it answers "what if the season is dry, typical or wet".
-* The app's typical number is real reported data (the county's middle yield for 2020 to 2025). Only the dry and wet change comes from the model, and the wet change is the least reliable part.
-* County averages are not field numbers. Sales per acre is not profit.
-* Soil wetness here is NASA's modeled value. SMAP satellite soil moisture starts in 2015, too short to train on.
+**How we tested it.** Every score comes from a year the model had never seen. We trained on earlier years and predicted the next one, for each year from 2016 to 2024. Then we ran 2025 once, at the very end.
+
+**What we found.**
+
+* Across the 8 crops, the model is off by 14.6% of yield on average. Just using each county's own average is off by 18.1%, and our first version was off by 16.9%. The model beats the county average for all 8 crops.
+* 2025 was mixed. Compared with our first version, the model did much better on spring wheat, barley, corn and canola, and worse on soybeans, dry peas and durum. Averaged over all crops the two versions tie (11.9% and 11.8%).
+* Drought years are still hard. The error there is about 20%.
+
+**What to keep in mind.**
+
+* This is not a forecast. The model needs the whole season's weather, so the app asks "what if the season is dry, typical or wet?" instead.
+* The typical yield in the app is real reported data: each county's middle yield for 2020 to 2025. The model only supplies the change for a dry or wet season, and the wet change is the shakiest part.
+* County averages are not field numbers, and sales per acre is not profit.
+* The soil wetness is NASA's modeled value. SMAP satellite soil moisture only starts in 2015, which is too short to train on.
 
 ## Credits
 
