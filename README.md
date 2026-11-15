@@ -2,13 +2,13 @@
 
 **What could grow well on your land?** A North Dakota prototype for the NASA Space Apps Challenge 2026, "Adapting Farms with NASA Data".
 
-Pick a county, pick a season (dry, typical, wet), say what equipment, water and markets you have, and get a ranked list of crops with the numbers behind each one.
+A user friendly interface to estimate agricultural yield by crop type, where users can adjust their farm settings and define the season.
 
 ## What is in here
 
 | Path | What it is |
 |---|---|
-| `docs/index.html` | The web app. One page, no build step, no server. |
+| `docs/index.html` | The web app. |
 | `docs/data.js` | The app's data, written by the notebook. |
 | `FieldShift_multicrop.ipynb` | The full pipeline: data, models, honest testing, scenarios, export. |
 | `data/raw/` | Cached downloads (USDA yields and prices, NASA POWER weather, county outlines). |
@@ -16,7 +16,7 @@ Pick a county, pick a season (dry, typical, wet), say what equipment, water and 
 
 ## See the app
 
-Open `docs/index.html` in a browser. To put it online with GitHub Pages: repo Settings, Pages, Source "Deploy from a branch", Branch `main`, folder `/docs`.
+Open `docs/index.html` in a browser.
 
 ## Run the notebook
 
