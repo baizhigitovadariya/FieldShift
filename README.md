@@ -32,9 +32,7 @@ Colab: upload the notebook, paste this repo's URL into `REPO_URL` in the first c
 
 ## What the model can and cannot do
 
-We train one random forest per crop on county data from 2001 onward. Each model sees month by month weather, how wet the soil was in April and May, winter rain, and satellite rain. It predicts yield relative to the statewide trend, since yields keep climbing over time.
-
-**How we tested it.** Every score comes from a year the model had never seen. We trained on earlier years and predicted the next one, for each year from 2016 to 2024. Then we ran 2025 once, at the very end.
+The model uses a Random Forest regression algorithm, trained separately for each crop on 2001 to 2025 data, to predict yield relative to the statewide trend. It uses month by month weather, soil wetness, winter rain and satellite rain. Model validation was performed by training on earlier years and predicting the next one, which the model had not seen.
 
 **What we found.**
 
