@@ -28,16 +28,36 @@ header.top h1{font-size:clamp(1.9rem,4.2vw,3rem);font-weight:800;letter-spacing:
 header.top p{margin:.6rem 0 0;max-width:62ch;color:#DCE8DF;font-size:1.02rem}
 .brand{font-family:var(--display);font-weight:700;color:var(--grain);font-size:1rem;margin-bottom:.5rem}
 
-main.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;padding-top:26px;padding-bottom:40px;align-items:start}
-@media (max-width:980px){main.grid{grid-template-columns:minmax(0,1fr)}}
+main.mapview{max-width:980px;padding-top:26px;padding-bottom:40px}
+main.resultsview{max-width:980px;padding-top:22px;padding-bottom:40px}
+header.top.slim{padding:16px 0 20px}
+header.top.slim h1{font-size:clamp(1.6rem,3.6vw,2.4rem);max-width:none}
+.back{background:transparent;color:#fff;border:1.5px solid #9DB7A7;border-radius:4px;padding:.45rem .8rem;cursor:pointer;margin-bottom:.9rem;min-height:44px;font-weight:600}
+.back::before{content:"\2190\00a0"}
+.back:hover{background:rgba(255,255,255,.12)}
+.assume{background:var(--paper);border:2px solid var(--ink);border-radius:6px;padding:18px 20px 6px;margin-bottom:26px}
+.assume>h2{font-size:1.3rem;font-weight:800}
+.arow{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:8px 18px;padding:16px 0;border-top:1px solid var(--line)}
+@media (max-width:640px){.arow{grid-template-columns:minmax(0,1fr)}}
+.arow h3{font-size:1.05rem;font-weight:700;padding-top:.2rem}
+#farmsummary{list-style:none;margin:0 0 .8rem;padding:0}
+#farmsummary li{padding:.35rem 0;border-bottom:1px dotted var(--line);display:flex;gap:.6rem;align-items:baseline;flex-wrap:wrap}
+#farmsummary li b{flex:none;min-width:6.2rem}
+#farmsummary li span.v{flex:1 1 16rem}
+.src{flex:none;font-size:.76rem;font-weight:700;border-radius:3px;padding:.08rem .45rem}
+.src.assumed{background:#F4E9C8;color:#6A4A05}
+.src.yours{background:#DDEBDD;color:#1F4D3A}
+.edit{background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:4px;padding:.5rem 1rem;font-weight:700;cursor:pointer;min-height:46px}
+.edit:hover{background:#F1F7F2}
+.edit.solid{background:var(--spruce);border-color:var(--spruce);color:#fff}
+#farmedit{margin-top:14px;padding:16px 16px 4px;background:#F3F6F2;border:1px solid var(--line);border-radius:6px}
+.editactions{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 14px}
 
 .step{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:18px 20px 20px;margin-bottom:18px}
 .step h2{font-size:1.2rem;font-weight:700;display:flex;gap:.6rem;align-items:baseline}
 .step h2 .n{flex:none;font-size:1rem;width:1.7rem;height:1.7rem;border-radius:50%;background:var(--spruce);color:#fff;display:inline-grid;place-items:center;transform:translateY(-1px)}
 .hint{color:var(--soft);font-size:.9rem;margin:.35rem 0 .8rem}
 
-.mapbox{position:sticky;top:12px}
-@media (max-width:980px){.mapbox{position:static}}
 #map{width:100%;height:auto;display:block}
 #map path{stroke:#fff;stroke-width:.9;cursor:pointer;transition:fill .2s}
 #map path:hover{stroke:var(--ink);stroke-width:1.6}
@@ -67,8 +87,6 @@ legend{font-weight:700;padding:0;margin-bottom:6px;font-size:.98rem}
 .checks label{display:flex;align-items:center;gap:.45rem;background:#fff;border:1.5px solid var(--line);border-radius:4px;padding:.45rem .7rem;font-size:.92rem;cursor:pointer;min-height:44px}
 .checks input{width:1.15rem;height:1.15rem;accent-color:var(--spruce)}
 .checks label:has(input:checked){border-color:var(--spruce);background:#F1F7F2}
-details.prices{margin-top:4px}
-details.prices summary{cursor:pointer;font-weight:700;padding:.3rem 0}
 .pricegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px 16px;margin-top:8px}
 .pricegrid label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.9rem}
 .pricegrid input{width:6.2rem;padding:.3rem .4rem;border:1.5px solid var(--soft);border-radius:4px;text-align:right;min-height:40px}
@@ -97,7 +115,7 @@ details.prices summary{cursor:pointer;font-weight:700;padding:.3rem 0}
 section.trust{background:var(--paper);border-top:4px solid var(--grain);padding:30px 0 36px}
 section.trust h2{font-size:1.5rem;font-weight:800;margin-bottom:.6rem}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:36px}
-@media (max-width:980px){.cols{grid-template-columns:1fr}}
+@media (max-width:980px){.cols{grid-template-columns:minmax(0,1fr)}}
 .cols ul{padding-left:1.1rem;margin:.4rem 0}
 .cols li{margin-bottom:.5rem;max-width:68ch}
 table{border-collapse:collapse;width:100%;font-size:.88rem}
@@ -113,80 +131,101 @@ footer p{max-width:90ch;margin:.3rem 0}
 </head>
 <body>
 
+<div id="view-map">
 <header class="top">
   <div class="wrap">
     <div class="brand">FieldShift, North Dakota</div>
     <h1>What could grow well on your land?</h1>
-    <p>Pick your county and the kind of season you want to plan for. Tell us about your equipment, water and markets. You get a short list of crops, with the numbers behind each one. It is a starting point for a conversation with people who know your fields.</p>
+    <p>Pick your county to see which crops fit it, with the numbers behind each one. Then tell us about your season and your farm. It is a starting point for a conversation with people who know your fields.</p>
   </div>
 </header>
-
-<main class="wrap grid">
-  <div class="mapbox">
-    <div class="step">
-      <h2><span class="n">1</span>Pick your county</h2>
-      <p class="hint">Tap the map or use the list.</p>
-      <div class="maprow">
-        <label for="countysel">County</label>
-        <select id="countysel"><option value="">Choose a county</option></select>
-        <label for="layersel">Color the map by</label>
-        <select id="layersel"></select>
-      </div>
-      <svg id="map" role="group" aria-label="Map of North Dakota counties">
-        <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E4E8E4"/><line x1="0" y1="0" x2="0" y2="6" stroke="#B9C2BB" stroke-width="2"/></pattern></defs>
-        <g id="mapg"></g>
-      </svg>
-      <div id="maptip" aria-live="polite"></div>
-      <div class="legend" id="legend"></div>
+<main class="wrap mapview">
+  <div class="step">
+    <h2>Pick your county</h2>
+    <p class="hint">Tap the map or use the list. Your crop list opens next.</p>
+    <div class="maprow">
+      <label for="countysel">County</label>
+      <select id="countysel"><option value="">Choose a county</option></select>
+      <label for="layersel">Color the map by</label>
+      <select id="layersel"></select>
     </div>
-  </div>
-
-  <div>
-    <div class="step">
-      <h2><span class="n">2</span>What kind of season?</h2>
-      <p class="hint">Nobody knows the season ahead. Try each one and see what changes.</p>
-      <div class="season" role="group" aria-label="Season">
-        <button type="button" data-s="dry" aria-pressed="false">Dry<small id="drysmall"></small></button>
-        <button type="button" data-s="typical" aria-pressed="true">Typical<small>a middle year</small></button>
-        <button type="button" data-s="wet" aria-pressed="false">Wet<small id="wetsmall"></small></button>
-      </div>
-      <p id="seasonnote"></p>
-    </div>
-
-    <div class="step">
-      <h2><span class="n">3</span>Your farm</h2>
-      <p class="hint">Crops that do not fit are moved to the bottom with the reason.</p>
-      <fieldset>
-        <legend>Seeding and harvest equipment you can use</legend>
-        <div class="checks">
-          <label><input type="checkbox" id="eq_drill" checked>Grain drill or air seeder</label>
-          <label><input type="checkbox" id="eq_planter" checked>Row crop planter</label>
-          <label><input type="checkbox" id="eq_cornhead" checked>Corn head for the combine</label>
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Is water often short on your fields?</legend>
-        <div class="checks">
-          <label><input type="radio" name="water" value="ok" checked>Usually enough</label>
-          <label><input type="radio" name="water" value="short">Often short</label>
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Crops you can sell nearby</legend>
-        <div class="checks" id="markets"></div>
-      </fieldset>
-      <details class="prices">
-        <summary>Prices (type your local price)</summary>
-        <p class="hint" id="pricehint"></p>
-        <div class="pricegrid" id="prices"></div>
-      </details>
-    </div>
-
-    <div id="results" aria-live="polite">
-      <div class="empty">Pick a county on the map to see your crop list.</div>
-    </div>
+    <svg id="map" role="group" aria-label="Map of North Dakota counties">
+      <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E4E8E4"/><line x1="0" y1="0" x2="0" y2="6" stroke="#B9C2BB" stroke-width="2"/></pattern></defs>
+      <g id="mapg"></g>
+    </svg>
+    <div id="maptip" aria-live="polite"></div>
+    <div class="legend" id="legend"></div>
   </div>
 </main>
+</div>
+
+<div id="view-results" hidden>
+<header class="top slim">
+  <div class="wrap">
+    <button type="button" class="back" id="backbtn">Back to the map</button>
+    <div class="brand">FieldShift, North Dakota</div>
+    <h1 id="countytitle" tabindex="-1"></h1>
+  </div>
+</header>
+<main class="wrap resultsview">
+  <section class="assume" aria-labelledby="assumeh">
+    <h2 id="assumeh">What this list assumes</h2>
+    <p class="hint">The crop list below is built from these. Change anything that does not match your farm and the list updates right away.</p>
+
+    <div class="arow">
+      <h3>Season</h3>
+      <div>
+        <div class="season" role="group" aria-label="Season">
+          <button type="button" data-s="dry" aria-pressed="false">Dry<small id="drysmall"></small></button>
+          <button type="button" data-s="typical" aria-pressed="true">Typical<small>a middle year</small></button>
+          <button type="button" data-s="wet" aria-pressed="false">Wet<small id="wetsmall"></small></button>
+        </div>
+        <p id="seasonnote"></p>
+      </div>
+    </div>
+
+    <div class="arow">
+      <h3>Your farm</h3>
+      <div>
+        <ul id="farmsummary"></ul>
+        <button type="button" class="edit" id="editbtn" aria-expanded="false" aria-controls="farmedit">Edit your farm</button>
+        <div id="farmedit" hidden>
+          <fieldset>
+            <legend>Seeding and harvest equipment you can use</legend>
+            <div class="checks">
+              <label><input type="checkbox" id="eq_drill" checked>Grain drill or air seeder</label>
+              <label><input type="checkbox" id="eq_planter" checked>Row crop planter</label>
+              <label><input type="checkbox" id="eq_cornhead" checked>Corn head for the combine</label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Is water often short on your fields?</legend>
+            <div class="checks">
+              <label><input type="radio" name="water" value="ok" checked>Usually enough</label>
+              <label><input type="radio" name="water" value="short">Often short</label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Crops you can sell nearby</legend>
+            <div class="checks" id="markets"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Prices</legend>
+            <p class="hint" id="pricehint"></p>
+            <div class="pricegrid" id="prices"></div>
+          </fieldset>
+          <div class="editactions">
+            <button type="button" class="edit solid" id="donebtn">Done</button>
+            <button type="button" class="edit" id="resetbtn">Put back the starting assumptions</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="results" aria-live="polite"></div>
+</main>
+</div>
 
 <section class="trust">
   <div class="wrap cols">
@@ -220,7 +259,7 @@ footer p{max-width:90ch;margin:.3rem 0}
 const D = window.FIELDSHIFT;
 if(!D){document.getElementById('results').innerHTML='<div class="empty">The data file did not load. Make sure data.js sits next to this page.</div>';return;}
 const CROPS = D.crops, COUNTIES = D.counties, KEYS = Object.keys(CROPS);
-const state = {county:null, season:'typical', layer:'spring_wheat', water:'ok', prices:{}, sell:{}};
+const state = {county:null, season:'typical', layer:'spring_wheat', water:'ok', prices:{}, sell:{}, touched:{equipment:false,water:false,markets:false,prices:false}};
 KEYS.forEach(k=>{state.prices[k]=CROPS[k].price; state.sell[k]=true;});
 const $ = id=>document.getElementById(id);
 const SEASON_WORD = {dry:'a dry season', typical:'a typical season', wet:'a wet season'};
@@ -287,8 +326,16 @@ function tip(fips){
   const v=layerValue(fips), k=state.layer;
   $('maptip').textContent=COUNTIES[fips].name+' County: '+(v==null?'too few '+CROPS[k].label.toLowerCase()+' reports to show a number':CROPS[k].label+' about '+fmtYield(k,v)+' '+unitShort(k)+' in '+SEASON_WORD[state.season]);
 }
-function pick(fips){state.county=fips;$('countysel').value=fips;paintMap();render();
-  if(window.matchMedia('(max-width:980px)').matches) $('results').scrollIntoView({behavior:'smooth',block:'start'});}
+function pick(fips){ if(location.hash==='#county-'+fips) route(); else location.hash='county-'+fips; }
+function route(){
+  const m=/^#county-(\d{5})$/.exec(location.hash), fips=m&&COUNTIES[m[1]]?m[1]:null;
+  state.county=fips; $('countysel').value=fips||'';
+  $('view-map').hidden=!!fips; $('view-results').hidden=!fips;
+  paintMap();
+  if(fips){ $('countytitle').textContent='Crops for '+COUNTIES[fips].name+' County'; render(); window.scrollTo(0,0); $('countytitle').focus({preventScroll:true}); }
+}
+window.addEventListener('hashchange',route);
+$('backbtn').addEventListener('click',()=>{location.hash='map';});
 $('countysel').addEventListener('change',e=>{if(e.target.value)pick(e.target.value);});
 $('layersel').addEventListener('change',e=>{state.layer=e.target.value;paintMap();});
 
@@ -298,19 +345,46 @@ document.querySelectorAll('.season button').forEach(b=>b.addEventListener('click
   document.querySelectorAll('.season button').forEach(x=>x.setAttribute('aria-pressed',x===b));
   paintMap();render();
 }));
-['eq_drill','eq_planter','eq_cornhead'].forEach(id=>$(id).addEventListener('change',render));
-document.querySelectorAll('input[name=water]').forEach(r=>r.addEventListener('change',e=>{state.water=e.target.value;render();}));
+['eq_drill','eq_planter','eq_cornhead'].forEach(id=>$(id).addEventListener('change',()=>{state.touched.equipment=true;render();}));
+document.querySelectorAll('input[name=water]').forEach(r=>r.addEventListener('change',e=>{state.water=e.target.value;state.touched.water=true;render();}));
 KEYS.forEach(k=>{
   const l=document.createElement('label');
   l.innerHTML=`<input type="checkbox" checked data-k="${k}">${CROPS[k].label}`;
-  l.querySelector('input').addEventListener('change',e=>{state.sell[k]=e.target.checked;render();});
+  l.querySelector('input').addEventListener('change',e=>{state.sell[k]=e.target.checked;state.touched.markets=true;render();});
   $('markets').appendChild(l);
   const p=document.createElement('label');
   p.innerHTML=`<span>${CROPS[k].label} ($ per ${CROPS[k].price_per})</span><input type="number" min="0" step="0.01" value="${CROPS[k].price}" data-k="${k}" aria-label="${CROPS[k].label} price in dollars per ${CROPS[k].price_per}">`;
-  p.querySelector('input').addEventListener('input',e=>{const v=parseFloat(e.target.value);state.prices[k]=isFinite(v)&&v>=0?v:0;render();});
+  p.querySelector('input').addEventListener('input',e=>{const v=parseFloat(e.target.value);state.prices[k]=isFinite(v)&&v>=0?v:0;state.touched.prices=true;render();});
   $('prices').appendChild(p);
 });
-$('pricehint').textContent='Filled in with the North Dakota average price farmers received in '+CROPS[KEYS[0]].price_year+' (USDA). Canola, peas and sunflower are shown per pound.';
+$('pricehint').textContent='Filled in with the North Dakota average price farmers received in '+CROPS[KEYS[0]].price_year+' (USDA). Type your local price. Canola, peas and sunflower are per pound.';
+
+function setEdit(open){ $('farmedit').hidden=!open; $('editbtn').setAttribute('aria-expanded',open); $('editbtn').hidden=open; if(!open) $('editbtn').focus(); }
+$('editbtn').addEventListener('click',()=>setEdit(true));
+$('donebtn').addEventListener('click',()=>setEdit(false));
+$('resetbtn').addEventListener('click',()=>{
+  ['eq_drill','eq_planter','eq_cornhead'].forEach(id=>$(id).checked=true);
+  document.querySelector('input[name=water][value=ok]').checked=true; state.water='ok';
+  KEYS.forEach(k=>{state.sell[k]=true; state.prices[k]=CROPS[k].price;});
+  document.querySelectorAll('#markets input').forEach(i=>i.checked=true);
+  document.querySelectorAll('#prices input').forEach(i=>i.value=CROPS[i.dataset.k].price);
+  Object.keys(state.touched).forEach(t=>state.touched[t]=false);
+  render();
+});
+const list=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+function farmSummary(){
+  const have=[], lack=[];
+  [['eq_drill','a grain drill or air seeder'],['eq_planter','a row crop planter'],['eq_cornhead','a corn head']].forEach(([id,t])=>($(id).checked?have:lack).push(t));
+  const equip=(have.length?'You have '+list(have)+'.':'No seeding equipment selected.')+(lack.length&&have.length?' You do not have '+list(lack)+'.':'');
+  const water=state.water==='short'?'Often short. Crops are ranked by how they do in a dry season.':'Usually enough.';
+  const cant=KEYS.filter(k=>!state.sell[k]).map(k=>CROPS[k].label.toLowerCase());
+  const markets=cant.length?(cant.length===KEYS.length?'You cannot sell any of these crops nearby.':'You cannot sell '+list(cant)+' nearby. You can sell the rest.'):'You can sell all '+KEYS.length+' crops nearby.';
+  const own=KEYS.filter(k=>state.prices[k]!==CROPS[k].price).map(k=>CROPS[k].label.toLowerCase());
+  const yr=CROPS[KEYS[0]].price_year;
+  const price=own.length?'Your own price for '+list(own)+'. North Dakota '+yr+' averages for the rest.':'North Dakota '+yr+' average prices.';
+  const row=(name,text,key)=>`<li><b>${name}</b><span class="v">${text}</span><span class="src ${state.touched[key]?'yours':'assumed'}">${state.touched[key]?'your answer':'assumed'}</span></li>`;
+  $('farmsummary').innerHTML=row('Equipment',equip,'equipment')+row('Water',water,'water')+row('Markets',markets,'markets')+row('Prices',price,'prices');
+}
 
 function equipmentReason(k){
   const d=$('eq_drill').checked,p=$('eq_planter').checked,c=$('eq_cornhead').checked,n=CROPS[k].needs;
@@ -365,10 +439,11 @@ function render(){
     fit.push({k,c,sales:c[state.season]*price,rank:c[rankSeason]*price,drop:(c.dry/c.typical-1)*100});
   });
   fit.sort((a,b)=>b.rank-a.rank);
-  let h=`<h2>${county.name} County, ${SEASON_WORD[state.season]}</h2><p id="resultsub">`+
+  farmSummary();
+  let h=`<h2>Your crop list for ${SEASON_WORD[state.season]}</h2><p id="resultsub">`+
     (state.water==='short'?'Because water is often short, crops are ranked by sales per acre in a <b>dry</b> season. ':'Ranked by estimated sales per acre before costs. ')+
     'Each dot row shows dry, typical and wet side by side.</p>';
-  if(!fit.length) h+='<div class="empty">No crops fit these choices. Turn a piece of equipment or a market back on in step 3.</div>';
+  if(!fit.length) h+='<div class="empty">No crops fit these choices. Choose "Edit your farm" and turn a piece of equipment or a market back on.</div>';
   fit.forEach((r,i)=>{
     const {k,c}=r, m=CROPS[k], v=c[state.season], give=v*m.test_error_pct/100;
     const worst=c.history.length?c.history.reduce((a,b)=>b[1]<a[1]?b:a):null;
@@ -404,7 +479,7 @@ function render(){
   $('sources').textContent='Data: '+D.meta.sources.join('; ')+'. Seasons '+D.meta.years[0]+' to '+D.meta.years[1]+'. Data file built '+D.meta.generated+'.';
 })();
 
-paintMap();
+route();
 })();
 </script>
 </body>
